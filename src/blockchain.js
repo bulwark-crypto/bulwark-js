@@ -64,6 +64,97 @@ const masternodeBlocksPerYear = (mns) => {
 const masternodeCollateral = 5000.0;
 
 /**
+ * Test provided string to see if it is possibly a
+ * wallet address.
+ * @param {String} s The string to test for address.
+ */
+const isAddress = (s) => {
+  return typeof(s) === 'string' && s.length === 34;
+};
+
+/**
+ * Try to guess if this is a solved block buy checking
+ * for the maximum PoW padding.
+ * @param {String} s The string to test for block hash.
+ */
+const isBlock = (s) => {
+  return !isNaN(s) || (typeof(s) === 'string' && s.substr(0, 4) === '0000');
+};
+
+/**
+ * If a string then assume its a transaction.
+ * @param {String} s String to test for transaction hash.
+ */
+const isTX = (s) => {
+  return typeof(s) === 'string';
+};
+
+/**
+ * What is the PoW subsidy/reward for the current block height.
+ * @param {Number} height The current block height.
+ */
+const subsidy = (height = 0) => {
+  let sub = 0.0;
+  let slowSub = 50.0;
+
+  if (height === 0) {
+    sub = 489720.00;
+  } else if (height < (params.RAMP_TO_BLOCK / 2)) {
+    slowSub /= params.RAMP_TO_BLOCK;
+    slowSub *= height;
+  } else if (height < params.RAMP_TO_BLOCK) {
+    slowSub /= params.RAMP_TO_BLOCK;
+    slowSub *= height;
+  } else if (height <= 86399 && height >= params.RAMP_TO_BLOCK) {
+    sub = 50;
+  } else if (height <= 172799 && height >= 86400) {
+    sub = 43.75;
+  } else if (height <= 259199 && height >= 172800) {
+    sub = 37.5;
+  } else if (height <= params.LAST_POW_BLOCK && height >= 259200) {
+    sub = 31.25;
+  } else if (height <= 431999 && height > params.LAST_POW_BLOCK) {
+    sub = 25;
+  } else if (height <= 518399 && height >= 432000) {
+    sub = 21.875;
+  } else if (height <= 604799 && height >= 518400) {
+    sub = 18.750;
+  } else if (height <= 691199 && height >= 604800) {
+    sub = 15.625;
+  } else if (height <= 777599 && height >= 691200) {
+    sub = 12.50;
+  } else if (height <= 863999 && height >= 777600) {
+    sub = 10.938;
+  } else if (height <= 950399 && height >= 864000) {
+    sub = 9.375;
+  } else if (height <= 1036799 && height >= 950400) {
+    sub = 7.812;
+  } else if (height <= 1123199 && height >= 1036800) {
+    sub = 6.250;
+  } else if (height <= 1209599 && height >= 1123200) {
+    sub = 5.469;
+  } else if (height <= 1295999 && height >= 1209600) {
+    sub = 4.688;
+  } else if (height <= 1382399 && height >= 1296000) {
+    sub = 3.906;
+  } else if (height <= 1468799 && height >= 1382400) {
+    sub = 3.125;
+  } else if (height <= 1555199 && height >= 1468800) {
+    sub = 2.734;
+  } else if (height <= 1641599 && height >= 1555200) {
+    sub = 2.344;
+  } else if (height <= 1727999 && height >= 1641600) {
+    sub = 1.953;
+  } else if (height > 1728000) {
+    sub = 1.625;
+  } else {
+    sub = 0;
+  }
+
+  return height === 0 || height >= params.RAMP_TO_BLOCK ? sub : slowSub;
+};
+
+/**
  * Get the block subsidy for masternodes based on provided params.
  * @param {Number} height The current block height.
  * @param {Number} mns The number of masternodes.
@@ -74,15 +165,15 @@ const masternodeSubsidy = (height = 0, mns = 0, supply = 0) => {
   let ret = 0.0;
 
   if (height < params.RAMP_TO_BLOCK) {
-  ret = 0;
+    ret = 0;
   } else if (height <= 28799 && height >= params.RAMP_TO_BLOCK) {
-  ret = val / 5;
+    ret = val / 5;
   } else if (height <= 57599 && height >= 28800) {
-  ret = val / 4;
+    ret = val / 4;
   } else if (height <= 86399 && height >= 57600) {
-  ret = val / 3;
+    ret = val / 3;
   } else if (height <= params.LAST_POW_BLOCK && height >= 86400) {
-  ret = val / 2;
+    ret = val / 2;
   } else if (height > params.LAST_POW_BLOCK) {
     let nCoins = mns * 5000;
     if (nCoins === 0) {
@@ -265,97 +356,6 @@ const masternodeSubsidy = (height = 0, mns = 0, supply = 0) => {
   }
 
   return ret;
-};
-
-/**
- * Test provided string to see if it is possibly a
- * wallet address.
- * @param {String} s The string to test for address.
- */
-const isAddress = (s) => {
-  return typeof(s) === 'string' && s.length === 34;
-};
-
-/**
- * Try to guess if this is a solved block buy checking
- * for the maximum PoW padding.
- * @param {String} s The string to test for block hash.
- */
-const isBlock = (s) => {
-  return !isNaN(s) || (typeof(s) === 'string' && s.substr(0, 4) === '0000');
-};
-
-/**
- * If a string then assume its a transaction.
- * @param {String} s String to test for transaction hash.
- */
-const isTX = (s) => {
-  return typeof(s) === 'string';
-};
-
-/**
- * What is the PoW subsidy/reward for the current block height.
- * @param {Number} height The current block height.
- */
-const subsidy = (height = 0) => {
-  let sub = 0.0;
-  let slowSub = 50.0;
-
-  if (height === 0) {
-    sub = 489720.00;
-  } else if (height < params.RAMP_TO_BLOCK / 2) {
-    slowSub /= params.RAMP_TO_BLOCK;
-    slowSub *= height;
-  } else if (height < params.RAMP_TO_BLOCK) {
-    slowSub /= params.RAMP_TO_BLOCK;
-    slowSub *= height;
-  } else if (height <= 86399 && height >= params.RAMP_TO_BLOCK) {
-    sub = 50;
-  } else if (height <= 172799 && height >= 86400) {
-    sub = 43.75;
-  } else if (height <= 259199 && height >= 172800) {
-    sub = 37.5;
-  } else if (height <= params.LAST_POW_BLOCK && height >= 259200) {
-    sub = 31.25;
-  } else if (height <= 431999 && height > params.LAST_POW_BLOCK) {
-    sub = 25;
-  } else if (height <= 518399 && height >= 432000) {
-    sub = 21.875;
-  } else if (height <= 604799 && height >= 518400) {
-    sub = 18.750;
-  } else if (height <= 691199 && height >= 604800) {
-    sub = 15.625;
-  } else if (height <= 777599 && height >= 691200) {
-    sub = 12.50;
-  } else if (height <= 863999 && height >= 777600) {
-    sub = 10.938;
-  } else if (height <= 950399 && height >= 864000) {
-    sub = 9.375;
-  } else if (height <= 1036799 && height >= 950400) {
-    sub = 7.812;
-  } else if (height <= 1123199 && height >= 1036800) {
-    sub = 6.250;
-  } else if (height <= 1209599 && height >= 1123200) {
-    sub = 5.469;
-  } else if (height <= 1295999 && height >= 1209600) {
-    sub = 4.688;
-  } else if (height <= 1382399 && height >= 1296000) {
-    sub = 3.906;
-  } else if (height <= 1468799 && height >= 1382400) {
-    sub = 3.125;
-  } else if (height <= 1555199 && height >= 1468800) {
-    sub = 2.734;
-  } else if (height <= 1641599 && height >= 1555200) {
-    sub = 2.344;
-  } else if (height <= 1727999 && height >= 1641600) {
-    sub = 1.953;
-  } else if (height > 1728000) {
-    sub = 1.625;
-  } else {
-    sub = 0;
-  }
-
-  return height >= params.RAMP_TO_BLOCK ? sub : slowSub;
 };
 
 module.exports = {
