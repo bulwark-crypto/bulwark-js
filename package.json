@@ -1,0 +1,16 @@
+{
+  "name": "bulwark-js",
+  "version": "0.0.1",
+  "description": "Bulwark javascript and node.js library",
+  "main": "src/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dustinengle/bulwark-rpc.git"
+  },
+  "author": "Dustin Engle",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "es6-promise": "^4.2.4"
+  }
+}
